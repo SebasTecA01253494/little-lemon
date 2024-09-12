@@ -1,16 +1,11 @@
-import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import OnboardingScreen from './screens/Onboarding';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { NavigationContainer } from "@react-navigation/native";
+import RootNavigator from "./navigators/RootNavigator";
 
-const Stack = createNativeStackNavigator();
-
+// App.js is already setup by wrapping NavigationContainer around Root Navigator
 export default function App() {
-    return (
+  return (
     <NavigationContainer>
-        <Stack.Navigator>
-        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-        </Stack.Navigator>
+      <RootNavigator />
     </NavigationContainer>
-    );
+  );
 }
