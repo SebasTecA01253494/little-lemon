@@ -1,19 +1,11 @@
 import * as React from 'react';
 import { View,StyleSheet, Text, Image, Pressable } from 'react-native';
 
-const WelcomeScreen = ({ navigation }) => {
+const HomeScreen = ({ navigation }) => {
   // Add welcome screen code here.
   return (
     <View style={styles.container}>
-    <View style={styles.contentContainer}>
-      <Image style={styles.logo} source={require("../assets/little-lemon-logo.png")}/>
-      <Text style={styles.title}>Little Lemon, your local Mediterranean Bistro</Text>
-    </View>
-
-      <Pressable  onPress={() => navigation.navigate("Subscribe")} style={styles.buttonWrapper} >
-        <Text style={styles.buttonText}>NewsLetter</Text>
-      </Pressable>
-
+    <Text style={styles.textStyle}>Home page</Text>
   </View>
 
 
@@ -57,4 +49,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default WelcomeScreen;
+export default HomeScreen;
