@@ -37,7 +37,11 @@ const RootNavigator = () => {
           <Stack.Screen name="Profile" component={ProfileScreen} />
         </>
       ) : (
+        <>
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        </>
       )}
     </Stack.Navigator>
   );

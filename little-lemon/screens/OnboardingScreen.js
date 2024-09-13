@@ -1,11 +1,28 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { View, Image, StyleSheet, Text, TextInput, Alert, Button } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+const clearOnboardingFlag = async () => {
+  try {
+    await AsyncStorage.removeItem('onboardingComplete');
+    console.log('Onboarding flag cleared');
+  } catch (e) {
+    console.error('Error clearing onboarding flag', e);
+  }
+};
 
+clearOnboardingFlag();
 const OnboardingScreen = ({navigation}) => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-
+  const completeOnboarding = async () => {
+    try {
+      await AsyncStorage.setItem("onboardingComplete", "true");
+      navigation.replace("Profile"); // Navigate to Profile after onboarding
+    } catch (e) {
+      console.error("Failed to save onboarding status.", e);
+    }
+  };
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -32,12 +49,7 @@ const OnboardingScreen = ({navigation}) => {
         keyboardType="email-address"
         textContentType="emailAddress"
       />
-
-      <Button
-        onPress={ () => Alert.alert("Next page, it is not programmed yet") }
-        title="Next"
-        color="#006600"
-      />
+      <Button title="Complete Onboarding" onPress={completeOnboarding} color="#006600" />
     </View>
   );
 };
