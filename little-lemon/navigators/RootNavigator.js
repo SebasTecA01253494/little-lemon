@@ -33,14 +33,14 @@ const RootNavigator = () => {
     <Stack.Navigator>
       {isOnboardingComplete ? (
         <>
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}/>
+          <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }}/>
         </>
       ) : (
         <>
-        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }}/>
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }}/>
         </>
       )}
     </Stack.Navigator>
