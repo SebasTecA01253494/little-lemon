@@ -1,16 +1,73 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { View, Image, StyleSheet, Text, TextInput, Alert, Button,TouchableOpacity } from 'react-native';
+import { View, Image, StyleSheet, Text, TextInput, Alert, Button,TouchableOpacity, ScrollView} from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from 'expo-image-picker';
-
+import { CheckBox } from 'react-native-elements';
 
 const ProfileScreen = ({ navigation }) => {
-
+  const [isChecked1, setIsChecked1] = useState(false);
+  const [isChecked2, setIsChecked2] = useState(false);
+  const [isChecked3, setIsChecked3] = useState(false);
+  const [isChecked4, setIsChecked4] = useState(false);
   const [image, setImage] = useState(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [LastName, setLastName] = useState('');
+
+  const save = async () => {
+
+    try {
+      await AsyncStorage.setItem("userFirstName", firstName || ""); 
+      await AsyncStorage.setItem("userLastName", LastName || ""); // Use `lastName` instead of `LastName`
+      await AsyncStorage.setItem("userImage", image || ""); 
+      await AsyncStorage.setItem("userEmail", email || ""); 
+      await AsyncStorage.setItem("userCheck1", String(isChecked1)); // Convert boolean to string
+      await AsyncStorage.setItem("userCheck2", String(isChecked2)); // Convert boolean to string
+      await AsyncStorage.setItem("userCheck3", String(isChecked3)); // Convert boolean to string
+      await AsyncStorage.setItem("userCheck4", String(isChecked4)); // Convert boolean to string
+      await AsyncStorage.setItem("userPhone", phone || ""); 
+
+      await AsyncStorage.setItem("lastSavedState", JSON.stringify({
+        firstName,
+        LastName,
+        image,
+        email,
+        isChecked1,
+        isChecked2,
+        isChecked3,
+        isChecked4,
+        phone
+      }));
+    } catch (e) {
+      console.error("Failed to save data.", e);
+    }
+  };
+  const loadLastSavedState = async () => {
+    try {
+      const lastSavedState = await AsyncStorage.getItem("lastSavedState");
+      if (lastSavedState) {
+        const state = JSON.parse(lastSavedState);
+        setFirstName(state.firstName);
+        setLastName(state.lastName);
+        setImage(state.image);
+        setEmail(state.email);
+        setIsChecked1(state.isChecked1 === 'true');
+        setIsChecked2(state.isChecked2 === 'true');
+        setIsChecked3(state.isChecked3 === 'true');
+        setIsChecked4(state.isChecked4 === 'true');
+        setPhone(state.phone);
+      }
+    } catch (e) {
+      console.error("Failed to load last saved state.", e);
+    }
+  };
+  const discardChanges = async () => {
+    await loadLastSavedState(); // Load last saved state and update form fields
+  };
+
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -53,11 +110,31 @@ const ProfileScreen = ({ navigation }) => {
   const changeScreen = async () => {
     try {
       await AsyncStorage.setItem("onboardingComplete", "false");
+      await AsyncStorage.removeItem("userFirstName"); 
+      await AsyncStorage.removeItem("userLastName"); 
+      await AsyncStorage.removeItem("userImage"); 
+      await AsyncStorage.removeItem("userEmail"); 
+      await AsyncStorage.removeItem("userCheck1"); 
+      await AsyncStorage.removeItem("userCheck2"); 
+      await AsyncStorage.removeItem("userCheck3"); 
+      await AsyncStorage.removeItem("userCheck4"); 
+      await AsyncStorage.removeItem("userPhone"); 
       navigation.replace("Onboarding")
     } catch (e) {
       console.error('Error clearing onboarding flag', e);
     }
   };
+  const isEmailValid = email => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(email);
+  };
+  
+  const validatePhoneNumber = (phone) => {
+    // Regex pattern for USA phone numbers
+    const phonePattern = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+    return phonePattern.test(phone);
+  };
+  const isButtonPressable = firstName && LastName && isEmailValid(email) &&validatePhoneNumber(phone);
   const back = async () => {
     try {
       navigation.replace("Home")
@@ -71,7 +148,16 @@ const ProfileScreen = ({ navigation }) => {
     const initials = names.map(n => n.charAt(0).toUpperCase()).join('');
     return initials;
   };
-  
+  const getNames =(name) =>{
+    const names2 = name.split(' ');
+    const first = names2[0]; // First part of the name
+    const last = names2.length > 1 ? names2[1] : '';
+    setFirstName(first);
+    setLastName(last);
+  };
+  useEffect(() => {
+    getNames(name);
+  }, [name]);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -100,7 +186,8 @@ const ProfileScreen = ({ navigation }) => {
           </View>
         )}
       </View>
-
+      <ScrollView style={styles.scrollableContent}>
+      <Text style={styles.textStyle}>Personal Information</Text>
       <View style={styles.imageContainer}>
     
       {image ? (
@@ -131,16 +218,16 @@ const ProfileScreen = ({ navigation }) => {
       <Text style={styles.textStyle}>First Name</Text>
       <TextInput 
         style={styles.inputStyle}
-        placeholder={name}
-        value={name}
-        onChangeText={setName}
+        placeholder={firstName}
+        value={firstName}
+        onChangeText={setFirstName}
       />
       <Text style={styles.textStyle}>Last Name</Text>
       <TextInput 
         style={styles.inputStyle}
-        placeholder={name}
-        value={name}
-        onChangeText={setName}
+        placeholder={LastName}
+        value={LastName}
+        onChangeText={setLastName}
       />
       <Text style={styles.textStyle}>Email</Text>
       <TextInput 
@@ -157,7 +244,37 @@ const ProfileScreen = ({ navigation }) => {
         placeholder={phone}
         value={phone}
         onChangeText={setPhone}
+        maxLength={10}
+        keyboardType="numeric"
+        textContentType="numeric"
       />
+      <Text style={styles.textStyle}>Email Notifications</Text>
+      <CheckBox
+        title='Order Statuses'
+        checked={isChecked1}
+        onPress={() => setIsChecked1(!isChecked1)}
+        checkedColor='#009522'
+      />
+      <CheckBox
+        title='Password Changes'
+        checked={isChecked2}
+        onPress={() => setIsChecked2(!isChecked2)}
+        checkedColor='#009522'
+      />
+      <CheckBox
+        title='Special Offers'
+        checked={isChecked3}
+        onPress={() => setIsChecked3(!isChecked3)}
+        checkedColor='#009522'
+      />
+      <CheckBox
+        title='Newsletter'
+        checked={isChecked4}
+        onPress={() => setIsChecked4(!isChecked4)}
+        checkedColor='#009522'
+      />
+      </ScrollView>
+
     <View style={styles.buttonContainer}>
     <TouchableOpacity 
       style={styles.logoutButton}
@@ -168,17 +285,20 @@ const ProfileScreen = ({ navigation }) => {
       <View style={styles.saveButton}>
         <Button 
           title="Save Changes" 
-          color="#009522"/>
+          color="#009522"
+          onPress={save}
+          disabled={!isButtonPressable}/>
+          
       </View>
       <View style={styles.discardButton}>
         <Button 
           title="Discard Changes" 
-          color="#009522"/>
+          color="#009522"
+          onPress={discardChanges}/>
       </View>
     </View>
     </View>    
   </View>
-
 
 
 );
@@ -211,7 +331,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flex: 1,
     justifyContent: 'flex-end', // Pushes the buttons towards the bottom
-    paddingBottom: 30, // Extra padding from the bottom screen edge
+    paddingBottom: 20,
+    marginTop: 130,
   },
   buttonText: {
     fontSize: 16,
@@ -245,8 +366,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
-    marginBottom: 10,
-    borderRadius: 8,
+    marginBottom: 50,
+    borderRadius: 5,
   },
   logoutButtonText: {
     color: 'black',
@@ -345,6 +466,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
+  },
+  scrollableContent: {
+    flexGrow: 1,
   }
 });
 
