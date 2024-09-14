@@ -57,6 +57,13 @@ const ProfileScreen = ({ navigation }) => {
       console.error('Error clearing onboarding flag', e);
     }
   };
+  const back = async () => {
+    try {
+      navigation.replace("Home")
+    } catch (e) {
+      console.error('Error clearing onboarding flag', e);
+    }
+  };
   const getInitials = (name) => {
     if (!name) return '?';
     const names = name.split(' ');
@@ -67,6 +74,15 @@ const ProfileScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <View style={styles.backButtonContainer}>
+        <TouchableOpacity onPress={back}>
+        <Image
+          source={require("../assets/Button_Header.png")}
+          style={styles.backButton}
+        />
+      </TouchableOpacity>
+        </View>
+      
       <Image
           style={styles.logo} 
           source={require("../assets/LEMON.png")}
@@ -227,7 +243,6 @@ const styles = StyleSheet.create({
     position: 'absolute', // Use absolute positioning
     top: 16, // Position from the top of the screen
     right: 10, // Position from the right side of the screen
-    borderWidth: 2,
   },
   imageContainer: {
     flexDirection: 'row',
@@ -278,6 +293,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center'
   },
+  backButton:{
+    width: 50, // Width of the image
+    height: 50, // Height of the image
+    resizeMode: 'contain',
+    
+  },
+  backButtonContainer:{
+    position: 'absolute',
+    top: 25,   // Adjust the vertical position of the back button
+    left: 0,  // Adjust the horizontal position of the back button
+  }
 });
 
 export default ProfileScreen;
