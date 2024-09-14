@@ -10,6 +10,7 @@ const ProfileScreen = ({ navigation }) => {
   const [image, setImage] = useState(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -127,6 +128,36 @@ const ProfileScreen = ({ navigation }) => {
         </View>
         
       </View>
+      <Text style={styles.textStyle}>First Name</Text>
+      <TextInput 
+        style={styles.inputStyle}
+        placeholder={name}
+        value={name}
+        onChangeText={setName}
+      />
+      <Text style={styles.textStyle}>Last Name</Text>
+      <TextInput 
+        style={styles.inputStyle}
+        placeholder={name}
+        value={name}
+        onChangeText={setName}
+      />
+      <Text style={styles.textStyle}>Email</Text>
+      <TextInput 
+        style={styles.inputStyle}
+        placeholder={email}
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        textContentType="emailAddress"
+      />
+      <Text style={styles.textStyle}>Phone number</Text>
+      <TextInput 
+        style={styles.inputStyle}
+        placeholder={phone}
+        value={phone}
+        onChangeText={setPhone}
+      />
     <View style={styles.buttonContainer}>
     <TouchableOpacity 
       style={styles.logoutButton}
@@ -303,6 +334,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 25,   // Adjust the vertical position of the back button
     left: 0,  // Adjust the horizontal position of the back button
+  },
+  inputStyle: {
+    borderColor: '#ddd',
+    borderWidth: 1,
+    padding: 8,
+    marginBottom: 16,
+  },
+  textStyle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
   }
 });
 
