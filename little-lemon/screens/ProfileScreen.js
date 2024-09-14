@@ -1,11 +1,32 @@
 import * as React from 'react';
-import { View,StyleSheet, Text, Image, Pressable } from 'react-native';
+import { View, Image, StyleSheet, Text, TextInput, Alert, Button } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ProfileScreen = ({ navigation }) => {
-  // Add welcome screen code here.
+
+  const changeScreen = async () => {
+    try {
+      await AsyncStorage.setItem("onboardingComplete", "false");
+      navigation.replace("Onboarding")
+    } catch (e) {
+      console.error('Error clearing onboarding flag', e);
+    }
+  };
+  
   return (
     <View style={styles.container}>
     <Text style={styles.textStyle}>Profile page</Text>
+    <Button 
+      title="Save Changes" 
+      color="#009522"/>
+
+    <Button 
+      title="Discard Changes" 
+      color="#009522"/>
+      <Button 
+      title="Log Out" 
+      onPress={changeScreen}
+      color="#FAFA33"/>
   </View>
 
 
