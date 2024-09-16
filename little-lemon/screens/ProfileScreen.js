@@ -16,7 +16,6 @@ const ProfileScreen = ({ navigation }) => {
   const [phone, setPhone] = useState('');
   const [firstName, setFirstName] = useState('');
   const [LastName, setLastName] = useState('');
-
   const save = async () => {
 
     try {
@@ -51,13 +50,13 @@ const ProfileScreen = ({ navigation }) => {
       if (lastSavedState) {
         const state = JSON.parse(lastSavedState);
         setFirstName(state.firstName);
-        setLastName(state.lastName);
+        setLastName(state.LastName);
         setImage(state.image);
         setEmail(state.email);
-        setIsChecked1(state.isChecked1 === 'true');
-        setIsChecked2(state.isChecked2 === 'true');
-        setIsChecked3(state.isChecked3 === 'true');
-        setIsChecked4(state.isChecked4 === 'true');
+        setIsChecked1(state.isChecked1);
+        setIsChecked2(state.isChecked2);
+        setIsChecked3(state.isChecked3);
+        setIsChecked4(state.isChecked4);
         setPhone(state.phone);
       }
     } catch (e) {
@@ -73,7 +72,6 @@ const ProfileScreen = ({ navigation }) => {
       try {
         const storedName = await AsyncStorage.getItem('userName');
         const storedEmail = await AsyncStorage.getItem('userEmail');
-        
         if (storedName) setName(storedName);
         if (storedEmail) setEmail(storedEmail);
       } catch (e) {
@@ -119,6 +117,7 @@ const ProfileScreen = ({ navigation }) => {
       await AsyncStorage.removeItem("userCheck3"); 
       await AsyncStorage.removeItem("userCheck4"); 
       await AsyncStorage.removeItem("userPhone"); 
+      await AsyncStorage.removeItem("lastSavedState")
       navigation.replace("Onboarding")
     } catch (e) {
       console.error('Error clearing onboarding flag', e);
@@ -158,6 +157,7 @@ const ProfileScreen = ({ navigation }) => {
   useEffect(() => {
     getNames(name);
   }, [name]);
+  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
