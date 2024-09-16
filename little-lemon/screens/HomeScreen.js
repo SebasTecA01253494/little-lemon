@@ -2,7 +2,6 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { View, Image, StyleSheet, Text, TextInput, Alert, Button,TouchableOpacity, ScrollView,FlatList} from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { setupDatabase, fetchMenuFromServer, storeMenuInDatabase, getMenuFromDatabase } from '../scripts/Database';
 
 const HomeScreen = ({ navigation }) => {
   const [image, setImage] = useState(null);
