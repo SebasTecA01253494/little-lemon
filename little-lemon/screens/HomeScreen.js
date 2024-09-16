@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { View, Image, StyleSheet, Text, TextInput, Alert, Button,TouchableOpacity, ScrollView} from 'react-native';
+import { View, Image, StyleSheet, Text, TextInput, Alert, Button,TouchableOpacity, ScrollView,FlatList} from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as ImagePicker from 'expo-image-picker';
-import { CheckBox } from 'react-native-elements';
+import { setupDatabase, fetchMenuFromServer, storeMenuInDatabase, getMenuFromDatabase } from '../scripts/Database';
 
 const HomeScreen = ({ navigation }) => {
   const [image, setImage] = useState(null);
   const [name, setName] = useState('');
+  const [menu, setMenu] = useState([]);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -39,6 +39,25 @@ const HomeScreen = ({ navigation }) => {
       console.error('Error changing screen to Profile', e);
     }
   };
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        const response = await fetch('https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/capstone.json');
+        const data = await response.json();
+        if (data.menu && Array.isArray(data.menu)) {
+          setMenu(data.menu); // Set the menu state with the array
+        } else {
+          console.error('Menu data is not in the expected format.');
+        }
+      } catch (e) {
+        console.error('Failed to fetch menu.', e);
+      }
+    };
+    
+    fetchMenu();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -62,7 +81,25 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
         </View> 
       </View>
-   
+      <FlatList
+        data={menu}
+        renderItem={({ item }) => (
+          <View style={styles.menuItem}>
+            {item.image ? (
+              <Image
+                source={{ uri: `https://github.com/Meta-Mobile-Developer-PC/Working-With-Data-API/blob/main/images/${item.image}?raw=true` }}
+                style={styles.menuItemImage}
+                
+              />
+            ) : null}
+            <Text style={styles.menuItemName}>{item.name}</Text>
+            <Text style={styles.menuItemDescription}>{item.description}</Text>
+            <Text style={styles.menuItemPrice}>${item.price.toFixed(2)}</Text>
+          </View>
+        )}
+        keyExtractor={(item) => item.name}
+        ListEmptyComponent={<Text style={styles.emptyText}>No menu items available.</Text>}
+      />
   </View>
 
 
@@ -129,6 +166,35 @@ const styles = StyleSheet.create({
   textStyle: {
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  menuItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  menuItemName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  menuItemDescription: {
+    fontSize: 14,
+    color: '#666',
+  },
+  menuItemPrice: {
+    fontSize: 16,
+    color: '#333',
+  },
+  emptyText: {
+    textAlign: 'center',
+    padding: 20,
+    fontSize: 16,
+    color: '#888',
+  },
+  menuItemImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
     marginBottom: 10,
   },
 });
