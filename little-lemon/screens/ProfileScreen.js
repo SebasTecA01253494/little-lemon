@@ -16,6 +16,8 @@ const ProfileScreen = ({ navigation }) => {
   const [phone, setPhone] = useState('');
   const [firstName, setFirstName] = useState('');
   const [LastName, setLastName] = useState('');
+  const [isFromHome, setIsFromHome] = useState(false);
+
   const save = async () => {
 
     try {
@@ -44,6 +46,7 @@ const ProfileScreen = ({ navigation }) => {
       console.error("Failed to save data.", e);
     }
   };
+  
   const loadLastSavedState = async () => {
     try {
       const lastSavedState = await AsyncStorage.getItem("lastSavedState");
@@ -72,8 +75,16 @@ const ProfileScreen = ({ navigation }) => {
       try {
         const storedName = await AsyncStorage.getItem('userName');
         const storedEmail = await AsyncStorage.getItem('userEmail');
+        const isFromHome = await AsyncStorage.getItem('FromHome');
         if (storedName) setName(storedName);
         if (storedEmail) setEmail(storedEmail);
+        if (isFromHome){
+          loadLastSavedState();
+          setIsFromHome('false');
+        } else{
+          setIsFromHome('false');
+        }
+
       } catch (e) {
         console.error('Failed to load user data.', e);
       }
@@ -136,6 +147,7 @@ const ProfileScreen = ({ navigation }) => {
   const isButtonPressable = firstName && LastName && isEmailValid(email) &&validatePhoneNumber(phone);
   const back = async () => {
     try {
+      save();
       navigation.replace("Home")
     } catch (e) {
       console.error('Error clearing onboarding flag', e);

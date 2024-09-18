@@ -2,12 +2,14 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { View, Image, StyleSheet, Text, TextInput, Alert, Button,TouchableOpacity, ScrollView,FlatList} from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createTable, fetchMenuFromDB, insertMenuItems } from '../scripts /database'; 
 
 const HomeScreen = ({ navigation }) => {
   const [image, setImage] = useState(null);
   const [name, setName] = useState('');
   const [menu, setMenu] = useState([]);
-
+  const [isChecked, setIsChecked] = useState(false);
+  
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -33,6 +35,7 @@ const HomeScreen = ({ navigation }) => {
 
   const goToProfile = async () => {
     try {
+      await AsyncStorage.setItem("FromHome", "true");
       navigation.replace("Profile")
     } catch (e) {
       console.error('Error changing screen to Profile', e);
@@ -42,20 +45,41 @@ const HomeScreen = ({ navigation }) => {
   useEffect(() => {
     const fetchMenu = async () => {
       try {
-        const response = await fetch('https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/capstone.json');
-        const data = await response.json();
-        if (data.menu && Array.isArray(data.menu)) {
-          setMenu(data.menu); // Set the menu state with the array
-        } else {
-          console.error('Menu data is not in the expected format.');
-        }
+        fetchMenuFromDB((storedMenu) => {
+          if (storedMenu.length > 0) {
+            setMenu(storedMenu);
+          } else {
+            fetch('https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/capstone.json')
+              .then(response => response.json())
+              .then(data => {
+                if (data.menu && Array.isArray(data.menu)) {
+                  insertMenuItems(data.menu); // Store data in SQLite
+                  setMenu(data.menu);
+                } else {
+                  console.error('Menu data is not in the expected format.');
+                }
+              })
+              .catch(error => console.error('Failed to fetch menu from server.', error));
+          }
+        });
       } catch (e) {
         console.error('Failed to fetch menu.', e);
       }
     };
-    
+
     fetchMenu();
   }, []);
+
+ 
+
+  const uniqueCategories = Array.from(new Set(menu.map(item => item.category)));
+
+  const handleCheckBoxPress = (category) => {
+    setIsChecked(prevState => ({
+      ...prevState,
+      [category]: !prevState[category],
+    }));
+  };
 
   return (
     <View style={styles.container}>
@@ -80,6 +104,23 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
         </View> 
       </View>
+      <ScrollView 
+      horizontal={true} // Enables horizontal scrolling
+      showsHorizontalScrollIndicator={false} // Hides the scroll indicator
+      contentContainerStyle={styles.scrollViewContainer} // Optional: Styles the content
+    >
+      {uniqueCategories.map((category) => (
+    <TouchableOpacity
+    key={category}
+    style={[styles.button, isChecked[category] ? styles.buttonChecked : styles.buttonUnchecked]}
+    onPress={() => handleCheckBoxPress(category)}
+  >
+    <Text style={styles.buttonText}>
+      {category.charAt(0).toUpperCase() + category.slice(1)}
+    </Text>
+  </TouchableOpacity>
+    ))}
+    </ScrollView>
       <FlatList
         data={menu}
         renderItem={({ item }) => (
@@ -148,7 +189,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 5,
     flexDirection: 'row',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    minHeight: 30,
   },
   initialsText2: {
     fontSize: 20,
@@ -195,6 +237,32 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 10,
     marginBottom: 10,
+  },
+  scrollViewContainer: {
+    paddingHorizontal: 20,
+    marginTop: 20,
+    marginBottom:50,
+    flexDirection: 'row', // Ensures items are laid out horizontally
+    minHeight: 45, // Set a minimum height for the ScrollView container
+  },
+  button: {
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  buttonChecked: {
+    backgroundColor: '#009522', // Button color when checked
+  },
+  buttonUnchecked: {
+    backgroundColor: '#cccccc', // Button color when unchecked
+  },
+  buttonText: {
+    color: '#ffffff', // Text color
+    fontWeight: 'bold',
+    fontSize:15,
   },
 });
 
