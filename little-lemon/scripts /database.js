@@ -3,12 +3,10 @@ import * as SQLite from 'expo-sqlite/legacy';
 const db = SQLite.openDatabase('little_lemon.db');
 
 export const createTable = () => {
-    const db = SQLite.openDatabase('little_lemon.db');
     db.transaction(tx => {
     tx.executeSql(
       `CREATE TABLE IF NOT EXISTS menu (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
+        name TEXT PRIMARY KEY,
         description TEXT,
         price REAL,
         image TEXT,
@@ -19,7 +17,6 @@ export const createTable = () => {
 };
 
 export const fetchMenuFromDB = (callback) => {
-    const db = SQLite.openDatabase('little_lemon.db');
     db.transaction(tx => {
     tx.executeSql(
       'SELECT * FROM menu',
@@ -35,7 +32,6 @@ export const fetchMenuFromDB = (callback) => {
 };
 
 export const insertMenuItems = (menuItems) => {
-    const db = SQLite.openDatabase('little_lemon.db');
     db.transaction(tx => {
     tx.executeSql(
       'DELETE FROM menu' // Clear the table before inserting new data
@@ -47,4 +43,39 @@ export const insertMenuItems = (menuItems) => {
       );
     });
   });
+};
+
+export const fetchMenuByCategories = (categories, callback) => {
+  // If no categories are selected, return all menu items
+  if (categories.length === 0) {
+    fetchMenuFromDB(callback);
+    console.log('No categories selected Menu Fetched');
+    return;
+  }
+  const placeholders = categories.map(() => '?').join(', '); // Generate placeholders for the SQL query
+  const query = `SELECT * FROM menu WHERE category IN (${placeholders})`;
+  
+  console.log('Executing Query:', query); // Debugging
+  console.log('With Parameters:', placeholders); // Debugging
+  console.log('With Parameters:', categories); // Debugging
+
+  db.transaction(tx => {
+    tx.executeSql(
+      query,
+      categories, 
+      (txObj, resultSet) => { 
+        callback(resultSet.rows._array); // Return the filtered menu items
+      },
+      (txObj, error) => {
+        console.error('Failed to fetch menu by categories:', error);
+      }
+    );
+  },
+  error => {
+    console.error('Transaction Error:', error);
+  },
+  () => {
+    console.log('Transaction Success');
+  }
+  );
 };

@@ -2,14 +2,15 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { View, Image, StyleSheet, Text, TextInput, Alert, Button,TouchableOpacity, ScrollView,FlatList} from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createTable, fetchMenuFromDB, insertMenuItems } from '../scripts /database'; 
+import { createTable, fetchMenuFromDB, insertMenuItems, fetchMenuByCategories } from '../scripts /database'; 
 
 const HomeScreen = ({ navigation }) => {
   const [image, setImage] = useState(null);
   const [name, setName] = useState('');
   const [menu, setMenu] = useState([]);
-  const [isChecked, setIsChecked] = useState(false);
-  
+  const [isChecked, setIsChecked] = useState({});
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [allMenu, setAllMenu] = useState([]);
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -48,6 +49,7 @@ const HomeScreen = ({ navigation }) => {
         fetchMenuFromDB((storedMenu) => {
           if (storedMenu.length > 0) {
             setMenu(storedMenu);
+            setAllMenu(storedMenu);
           } else {
             fetch('https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/capstone.json')
               .then(response => response.json())
@@ -55,6 +57,7 @@ const HomeScreen = ({ navigation }) => {
                 if (data.menu && Array.isArray(data.menu)) {
                   insertMenuItems(data.menu); // Store data in SQLite
                   setMenu(data.menu);
+                  setAllMenu(data.menu);
                 } else {
                   console.error('Menu data is not in the expected format.');
                 }
@@ -70,15 +73,41 @@ const HomeScreen = ({ navigation }) => {
     fetchMenu();
   }, []);
 
- 
+  useEffect(() => {
+    // Fetch menu items based on selected categories
+    console.log('Selected Categories:', selectedCategories);
+    if (selectedCategories.length > 0) {
+      console.log('Filtering menu');
+      fetchMenuByCategories(selectedCategories,(filteredMenu) => {
+        console.log('Filtered Menu:', filteredMenu); // Debugging
+        setMenu(filteredMenu); // Set filtered menu
+      });
+    } else {
+      // If no category is selected, fetch all menu items
+      console.log('not Filtering menu');
+      fetchMenuFromDB((allMenu2) => {
+        console.log('All Menu:', allMenu2); // Debugging
+        setMenu(allMenu2); // Set all menu items
+      });
+    }
+  }, [selectedCategories]);
 
-  const uniqueCategories = Array.from(new Set(menu.map(item => item.category)));
+  const uniqueCategories = Array.from(new Set(allMenu.map(item => item.category)));
+
 
   const handleCheckBoxPress = (category) => {
     setIsChecked(prevState => ({
       ...prevState,
       [category]: !prevState[category],
     }));
+  
+    setSelectedCategories((prevCategories) => {
+      if (prevCategories.includes(category)) {
+        return prevCategories.filter(c => c !== category);  // Remove category
+      } else {
+        return [...prevCategories, category];  // Add category
+      }
+    });
   };
 
   return (
