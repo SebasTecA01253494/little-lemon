@@ -88,7 +88,7 @@ export const fetchMenuByName = (name, callback) => {
     return;
   }
   const query = `SELECT * FROM menu WHERE name LIKE ?`;
-  let params = [`%${name}%`];
+  let params = [`${name}%`];
   console.log('Executing Query:', query); // Debugging
   console.log('With Parameters:', name); // Debugging
   db.transaction(tx => {

@@ -31,6 +31,7 @@ const OnboardingScreen = ({navigation}) => {
       await AsyncStorage.setItem("FromHome", "false");
       await AsyncStorage.setItem("userName", name); // Save name
       await AsyncStorage.setItem("userEmail", email); // Save email
+      await AsyncStorage.removeItem("lastSavedState")
       navigation.replace("Profile"); // Navigate to Profile after onboarding
     } catch (e) {
       console.error("Failed to save onboarding status.", e);
