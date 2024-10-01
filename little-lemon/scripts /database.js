@@ -79,3 +79,35 @@ export const fetchMenuByCategories = (categories, callback) => {
   }
   );
 };
+
+export const fetchMenuByName = (name, callback) => {
+  // If no categories are selected, return all menu items
+  if (name.length === 0) {
+    fetchMenuFromDB(callback);
+    console.log('No dish found with that name');
+    return;
+  }
+  const query = `SELECT * FROM menu WHERE name LIKE ?`;
+  let params = [`%${name}%`];
+  console.log('Executing Query:', query); // Debugging
+  console.log('With Parameters:', name); // Debugging
+  db.transaction(tx => {
+    tx.executeSql(
+      query,
+      params, 
+      (txObj, resultSet) => { 
+        callback(resultSet.rows._array); // Return the filtered menu items
+      },
+      (txObj, error) => {
+        console.error('Failed to fetch menu by name:', error);
+      }
+    );
+  },
+  error => {
+    console.error('Transaction Error:', error);
+  },
+  () => {
+    console.log('Transaction Success');
+  }
+  );
+};

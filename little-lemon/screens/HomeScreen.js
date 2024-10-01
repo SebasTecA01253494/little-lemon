@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { View, Image, StyleSheet, Text, TextInput, Alert, Button,TouchableOpacity, ScrollView,FlatList} from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createTable, fetchMenuFromDB, insertMenuItems, fetchMenuByCategories } from '../scripts /database'; 
+import { createTable, fetchMenuFromDB, insertMenuItems, fetchMenuByCategories, fetchMenuByName } from '../scripts /database'; 
 
 const HomeScreen = ({ navigation }) => {
   const [image, setImage] = useState(null);
@@ -11,6 +11,8 @@ const HomeScreen = ({ navigation }) => {
   const [isChecked, setIsChecked] = useState({});
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [allMenu, setAllMenu] = useState([]);
+  const [searchText, setSearchText] = useState("");
+
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -79,18 +81,38 @@ const HomeScreen = ({ navigation }) => {
     if (selectedCategories.length > 0) {
       console.log('Filtering menu');
       fetchMenuByCategories(selectedCategories,(filteredMenu) => {
-        console.log('Filtered Menu:', filteredMenu); // Debugging
+         // Debugging
         setMenu(filteredMenu); // Set filtered menu
       });
     } else {
       // If no category is selected, fetch all menu items
       console.log('not Filtering menu');
-      fetchMenuFromDB((allMenu2) => {
-        console.log('All Menu:', allMenu2); // Debugging
+      fetchMenuFromDB((allMenu2) => { // Debugging
         setMenu(allMenu2); // Set all menu items
       });
     }
   }, [selectedCategories]);
+
+  useEffect(() => {
+    // Fetch menu items based on selected categories
+    const delayDebounceFn = setTimeout(() => {
+    console.log('Name:', searchText);
+    if (searchText.length > 0) {
+      console.log('Filtering menu');
+      fetchMenuByName(searchText,(filteredMenu) => {
+         // Debugging
+        setMenu(filteredMenu); // Set filtered menu
+      });
+    } else {
+      // If no category is selected, fetch all menu items
+      console.log('not Filtering menu');
+      fetchMenuFromDB((allMenu2) => { // Debugging
+        setMenu(allMenu2); // Set all menu items
+      });
+    }
+  }, 500);
+  return () => clearTimeout(delayDebounceFn);
+  }, [searchText]);
 
   const uniqueCategories = Array.from(new Set(allMenu.map(item => item.category)));
 
@@ -133,6 +155,28 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
         </View> 
       </View>
+      <View style={styles.bannerContainer}>
+        <View style={styles.cont2}>
+        <View style={styles.bannerTextContainer}>
+        <Text style={styles.bannerTitle}>Little Lemon</Text>
+        <Text style={styles.bannerSubtitle}>Chicago</Text>
+        <Text style={styles.bannerDescription}>
+          We are a family-owned Mediterranean restaurant focused on traditional recipes served with a modern twist.
+        </Text>
+        </View>
+        <Image
+          source={require('../assets/banner.jpg')} // Add a banner image in your assets folder
+          style={styles.bannerImage}
+        />
+        </View>
+        <TextInput
+          style={styles.searchBar}
+          placeholder="Search menu..."
+          value={searchText}
+          onChangeText={setSearchText}
+        />
+      </View>
+      <Text style={styles.textStyle}>ORDER FOR DELIVERY!</Text>
       <ScrollView 
       horizontal={true} // Enables horizontal scrolling
       showsHorizontalScrollIndicator={false} // Hides the scroll indicator
@@ -269,8 +313,8 @@ const styles = StyleSheet.create({
   },
   scrollViewContainer: {
     paddingHorizontal: 20,
-    marginTop: 20,
-    marginBottom:50,
+    marginTop: 10,
+    marginBottom:90,
     flexDirection: 'row', // Ensures items are laid out horizontally
     minHeight: 45, // Set a minimum height for the ScrollView container
   },
@@ -292,6 +336,53 @@ const styles = StyleSheet.create({
     color: '#ffffff', // Text color
     fontWeight: 'bold',
     fontSize:15,
+  },
+  bannerContainer: {
+    backgroundColor: '#00640a',
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 10,
+    alignItems: 'center', // Align items in the center vertically
+    justifyContent: 'space-between', // Space between text and image
+  },
+  cont2:{
+    flexDirection:'row',
+  },
+  bannerTextContainer: {
+    flex: 1, // Takes up the remaining space
+    marginRight: 10, // Add some spacing between text and image
+  },
+  bannerTitle: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#edde24',
+    marginBottom: 10,
+  },
+  bannerSubtitle: {
+    fontSize: 20,
+    fontWeight: '500',
+    color: '#d3d3d3',
+    marginBottom: 20,
+  },
+  bannerDescription: {
+    fontSize: 12,
+    color: '#d3d3d3',
+    textAlign: 'justify', // Align text to the left
+  },
+  bannerImage: {
+    marginTop:30,
+    width: 120, // Adjust width
+    height: 120, // Adjust height to keep it square
+    borderRadius: 10,
+  },
+  searchBar: {
+    width: '100%',
+    padding: 10,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    marginTop:10,
   },
 });
 
